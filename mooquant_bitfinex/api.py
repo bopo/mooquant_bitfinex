@@ -55,4 +55,5 @@ def get_orderbook(currency_pair):
         ret = json_http_request(url)
     except:
         raise BitfinexError('Problem fetching trades')
-return ret
+    
+    return ret
