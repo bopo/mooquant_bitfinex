@@ -3,15 +3,16 @@ from mooquant.bar import Frequency
 from mooquant.technical import ma
 from mooquant.technical import cross
 
-from mooquant_bitfinex import livefeed
-from mooquant_bitfinex import broker
+from mooquant_ctp import livefeed
+from mooquant_ctp import broker
 
 
 class Strategy(strategy.BaseStrategy):
     def __init__(self, feed, brk):
         strategy.BaseStrategy.__init__(self, feed, brk)
         smaPeriod = 20
-        self.__instrument = "btcusd"
+
+        self.__instrument = "ethusd"
         self.__prices = feed[self.__instrument].getCloseDataSeries()
         self.__sma = ma.SMA(self.__prices, smaPeriod)
         self.__bid = None
@@ -29,7 +30,7 @@ class Strategy(strategy.BaseStrategy):
         if bid != self.__bid or ask != self.__ask:
             self.__bid = bid
             self.__ask = ask
-            self.info("Order book updated. Best bid: %s. Best ask: %s" % (self.__bid, self.__ask))
+            self.info("订单更新. Best bid: %s. Best ask: %s" % (self.__bid, self.__ask))
 
     def onEnterOk(self, position):
         self.info("Position opened at %s" % (position.getEntryOrder().getExecutionInfo().getPrice()))
@@ -48,7 +49,7 @@ class Strategy(strategy.BaseStrategy):
 
     def onBars(self, bars):
         bar = bars[self.__instrument]
-        self.info("Price: %s. Volume: %s." % (bar.getClose(), bar.getVolume()))
+        self.info("价格: %s. 交易量: %s." % (bar.getClose(), bar.getVolume()))
 
         # Wait until we get the current bid/ask prices.
         if self.__ask is None:

@@ -8,7 +8,7 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-from mooquant_bitfinex import __version__
+from mooquant_ctp import __version__
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -18,22 +18,22 @@ test_requirements = ['mooquant', 'pytest',]
 setup_requirements = ['mooquant',]
 
 setup(
-    name='mooquant_bitfinex',
+    name='mooquant_ctp',
     version=__version__,
     description="mooquant bitfinex module",
     long_description=readme + '\n\n',
     author="bopo.wang",
     author_email='ibopo@126.com',
-    url='https://github.com/bopo/mooquant_bitfinex',
-    packages=find_packages(include=['mooquant_bitfinex','mooquant_bitfinex.*']),
+    url='https://github.com/bopo/mooquant_ctp',
+    packages=find_packages(include=['mooquant_ctp','mooquant_ctp.*']),
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='mooquant_bitfinex',
+    keywords='mooquant_ctp',
     entry_points={
         'console_scripts': [
-            'mooquant_bitfinex = mooquant_bitfinex.cli:main',
+            'mooquant_ctp = mooquant_ctp.cli:main',
         ]
     },
     classifiers=[
