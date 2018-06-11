@@ -13,9 +13,9 @@ from mooquant_bitfinex import __version__
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-requirements = ['mooquant',]
-test_requirements = ['mooquant', 'pytest',]
-setup_requirements = ['mooquant',]
+requirements = ['mooquant', ]
+test_requirements = ['mooquant', 'pytest', ]
+setup_requirements = ['mooquant', ]
 
 setup(
     name='mooquant_bitfinex',
@@ -25,7 +25,10 @@ setup(
     author="bopo.wang",
     author_email='ibopo@126.com',
     url='https://github.com/bopo/mooquant_bitfinex',
-    packages=find_packages(include=['mooquant_bitfinex','mooquant_bitfinex.*']),
+    packages=find_packages(
+        include=[
+            'mooquant_bitfinex',
+            'mooquant_bitfinex.*']),
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
@@ -34,8 +37,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mooquant_bitfinex = mooquant_bitfinex.cli:main',
-        ]
-    },
+        ]},
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

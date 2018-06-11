@@ -23,7 +23,6 @@
 import mooquant.logger
 from mooquant import broker
 
-
 btc_symbol = "btcusd"
 logger = mooquant.logger.getLogger("bitfinex")
 

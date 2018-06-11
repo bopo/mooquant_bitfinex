@@ -20,19 +20,14 @@
 .. moduleauthor:: Mikko Gozalo <mikgozalo@gmail.com>
 """
 
-import time
 import datetime
-import threading
 import queue
+import threading
+import time
 
-from mooquant import bar
-from mooquant import barfeed
-from mooquant import dataseries
-from mooquant import logger
+from mooquant import bar, barfeed, dataseries, logger, observer
 from mooquant.utils import dt
-from mooquant import observer
 from mooquant_bitfinex import api
-
 
 logger = logger.getLogger("bitfinex")
 
@@ -56,10 +51,11 @@ class TradeBar(bar.Bar):
                 )
 
         TradeBar.last_datetime = trade_dt
+
         self.__dateTime = trade_dt
         self.__tradeId = bardict['tid']
-        self.__price = float(bardict['price'])
         self.__amount = float(bardict['amount'])
+        self.__price = float(bardict['price'])
         self.__type = bardict['type']
 
     def __setstate__(self, state):
@@ -72,13 +68,7 @@ class TradeBar(bar.Bar):
         ) = state
 
     def __getstate__(self):
-        return (
-            self.__dateTime,
-            self.__tradeId,
-            self.__price,
-            self.__amount,
-            self.__type
-        )
+        return self.__dateTime, self.__tradeId, self.__price, self.__amount, self.__type
 
     def setUseAdjustedValue(self, useAdjusted):
         if useAdjusted:
@@ -142,6 +132,7 @@ class PollingThread(threading.Thread):
 
     def run(self):
         logger.info("Thread started")
+
         while not self.__stopped:
             self.__wait()
             if not self.__stopped:
@@ -149,6 +140,7 @@ class PollingThread(threading.Thread):
                     self.doCall()
                 except Exception as e:
                     logger.critical("Unhandled exception", exc_info=e)
+
         logger.debug("Thread finished.")
 
     # Must return a non-naive datetime.
@@ -169,9 +161,10 @@ class TradesAPIThread(PollingThread):
         PollingThread.__init__(self)
 
         self.__queue = queue
+        self.__apiCallDelay = apiCallDelay
         self.__identifiers = identifiers
         self.__frequency = bar.Frequency.TRADE
-        self.__apiCallDelay = apiCallDelay
+
         self.last_tid = 0
         self.last_orderbook_ts = 0
 
@@ -183,17 +176,21 @@ class TradesAPIThread(PollingThread):
             try:
                 trades = api.get_trades(identifier)
                 trades.reverse()
+
                 for barDict in trades:
                     bar = {}
                     trade = TradeBar(barDict)
                     bar[identifier] = trade
                     tid = trade.getTradeId()
+
                     if tid > self.last_tid:
                         self.last_tid = tid
                         self.__queue.put((
                             TradesAPIThread.ON_TRADE, bar
                         ))
+
                 orders = api.get_orderbook(identifier)
+
                 if len(orders['bids']) and len(orders['asks']):
                     best_ask = orders['asks'][0]
                     best_bid = orders['bids'][0]
@@ -225,10 +222,13 @@ class LiveFeed(barfeed.BaseBarFeed):
             maxLen=dataseries.DEFAULT_MAX_LEN
     ):
         logger.info('Livefeed created')
+        
         barfeed.BaseBarFeed.__init__(self, bar.Frequency.TRADE, maxLen)
+
         if not isinstance(identifiers, list):
             raise Exception("identifiers must be a list")
 
+        self.__bars = []
         self.__queue = queue.Queue()
         self.__orderBookUpdateEvent = observer.Event()
         self.__thread = TradesAPIThread(
@@ -236,7 +236,7 @@ class LiveFeed(barfeed.BaseBarFeed):
             identifiers,
             datetime.timedelta(seconds=apiCallDelay)
         )
-        self.__bars = []
+
         for instrument in identifiers:
             self.registerInstrument(instrument)
 
@@ -244,6 +244,7 @@ class LiveFeed(barfeed.BaseBarFeed):
     def start(self):
         if self.__thread.is_alive():
             raise Exception("Already strated")
+
         self.__thread.start()
 
     def stop(self):
@@ -268,21 +269,22 @@ class LiveFeed(barfeed.BaseBarFeed):
 
     def dispatch(self):
         ret = False
-        
+
         if self.__dispatchImpl(None):
             ret = True
 
         if barfeed.BaseBarFeed.dispatch(self):
             ret = True
-        
+
         return ret
 
     def __dispatchImpl(self, eventFilter):
         ret = False
+
         try:
             eventType, eventData = self.__queue.get(
-                True, LiveFeed.QUEUE_TIMEOUT
-            )
+                True, LiveFeed.QUEUE_TIMEOUT)
+
             if eventFilter is not None and eventType not in eventFilter:
                 return False
 
@@ -310,7 +312,7 @@ class LiveFeed(barfeed.BaseBarFeed):
     def getNextBars(self):
         if len(self.__bars):
             return bar.Bars(self.__bars.pop(0))
-        
+
         return None
 
     def getOrderBookUpdateEvent(self):

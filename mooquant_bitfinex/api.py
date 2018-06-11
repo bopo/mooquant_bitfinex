@@ -1,4 +1,4 @@
-# PyAlgoTrade BitFinex module
+# MooQuant BitFinex module
 #
 # Copyright 2011-2015 Gabriel Martin Becedillas Ruiz
 #
@@ -14,16 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Modified from PyAlgoTrade Bitstamp and Xignite modules
+# Modified from MooQuant Bitstamp and Xignite modules
 
 """
 .. moduleauthor:: Mikko Gozalo <mikgozalo@gmail.com>
 """
 
-import urllib.request
-import urllib.error
-import urllib.parse
-import json
+import requests
 
 
 class BitfinexError(Exception):
@@ -32,28 +29,27 @@ class BitfinexError(Exception):
 
 
 def json_http_request(url):
-    f = urllib.request.urlopen(url)
-    response = f.read()
-    return json.loads(response)
+    response = requests.get(url)
+    return response.json()
 
 
 def get_trades(currency_pair):
     url = "https://api.bitfinex.com/v1/trades/{}".format(currency_pair)
-    
+
     try:
         ret = json_http_request(url)
-    except:
+    except BaseException:
         raise BitfinexError('Problem fetching trades')
-    
+
     return ret
 
 
 def get_orderbook(currency_pair):
     url = "https://api.bitfinex.com/v1/book/{}".format(currency_pair)
-    
+
     try:
         ret = json_http_request(url)
-    except:
+    except BaseException:
         raise BitfinexError('Problem fetching trades')
-    
+
     return ret
