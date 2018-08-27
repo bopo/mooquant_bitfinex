@@ -12,10 +12,12 @@ class MyStrategy(strategy.BaseStrategy):
         self.__instrument = "btcusd"
         self.__prices = feed[self.__instrument].getCloseDataSeries()
         self.__sma = ma.SMA(self.__prices, smaPeriod)
-        self.__bid = None
-        self.__ask = None
+        
         self.__position = None
         self.__posSize = 0.05
+
+        self.__bid = None
+        self.__ask = None
 
         # Subscribe to order book update events to get bid/ask prices to trade.
         feed.getOrderBookUpdateEvent().subscribe(self.__onOrderBookUpdate)
